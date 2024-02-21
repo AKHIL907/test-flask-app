@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  parameter-store:
+    docker_registry_username: /myapp/docker-credentials/username
+    docker_registry_password: /myapp/docker-credentials/password
+    docker_registry_url: /myapp/docker-credentials/url
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - pip install -r requirments.txt
+  build:
+    commands:
+      - echo "Running tests..."
+      - echo "Building Docker image..."
+      - docker login -u $docker_registry_username -p $docker_registry_password
+      - docker build -t sample_python_flaskapp:latest .
+      - docker tag sample_python_flaskapp:latest $docker_registry_username/sample_python_flaskapp:latest
+      - docker push $docker_registry_username/sample_python_flaskapp:latest
+  post_build:
+    commands:
+      - echo "Build completed successfully!"
+
